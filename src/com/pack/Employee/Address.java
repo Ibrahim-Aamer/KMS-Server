@@ -1,19 +1,27 @@
 package com.pack.Employee;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import com.example.kms.Employee;
+
+import javax.persistence.*;
 
 @Entity
-@Table(name="empAddress")
+@Table(name="EmployeeAddress")
 public class Address {
 	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int address_id;
 	private String city;
 	private String street;
 
+	@ManyToOne
+	//@JoinColumn (name="employee_id",referencedColumnName="id",nullable=false,unique=true)
+	@JoinColumn (name="employee_id")
+	private Employee mEmployee;
+
+	public String getAddress()
+	{
+		return city+" "+street;
+	}
 	
 	public String getCity() {
 		return city;

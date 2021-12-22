@@ -1,22 +1,12 @@
 package com.example.kms;
 
 
-
-import com.pack.Employee.Address;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.Serializable;
+import java.util.*;
 
 @Entity
-@Table(name="KMS_Employees")
+@Table(name="kms_emp5")
 public class Employee implements Serializable {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -25,21 +15,63 @@ public class Employee implements Serializable {
 	protected String firstName;
 	protected String lastName;
 
+	@Column(unique=true)
 	protected String username;
 	protected String password;
 
 	@Column(name="EmployeeType")
 	protected String employeeType;
 
-	@Column(name="Email")
-	protected String email;
+	public String getEmployeeType() {
+		return employeeType;
+	}
 
 	//@OneToOne(cascade = CascadeType.ALL)
-	//private Address empAddress;
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name="emp_id")
+	@OrderColumn(name="type")
+	private Set<Task> tasks = new HashSet<>();
+	//private Address empAddresses;
 
+
+
+	public List<Task> getTasks()
+	{
+		List<Task> taskList = new ArrayList<Task>();
+
+		Iterator<Task> it = this.tasks.iterator();
+		while(it.hasNext()){
+			taskList.add(it.next());
+			//System.out.println(it.next().getTaskDetails());
+		}
+		return taskList;
+	}
+
+	public void addTask(Task task)
+	{
+		tasks.add(task);
+	}
+
+	public void setTasksCollection(Set<Task> tasks)
+	{
+		this.tasks = tasks;
+	}
+
+	/*public void showAddresses()
+	{
+		Iterator<Address> iterator = empAddresses.iterator();
+		// while loop
+		while (iterator.hasNext()) {
+			System.out.println("Address = " + iterator.next().getAddress());
+		}
+	}
+*/
 	//To hide a column @Transient
 
-	public Employee(){};
+	public Employee()
+	{
+
+	};
 
 	public Employee(String fname, String lname, String username, String password, String empType)
 	{

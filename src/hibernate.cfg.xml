@@ -14,7 +14,7 @@
 
 <property name="show_sql">true</property>
 <mapping class="com.example.kms.Employee" />
-    <mapping class="com.pack.Employee.Address" />
+    <mapping class="com.example.kms.Task" />
 
 
 </session-factory>

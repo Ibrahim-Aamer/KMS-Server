@@ -1,5 +1,7 @@
 import com.example.kms.Employee;
+import com.example.kms.EmployeeKMS;
 import com.example.kms.Message;
+import com.example.kms.Task;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -7,6 +9,7 @@ import org.hibernate.cfg.Configuration;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -19,7 +22,7 @@ class Server {
         try {
 
             // server is listening on port 1234
-            server = new ServerSocket(4444);
+            server = new ServerSocket(4470);
             server.setReuseAddress(true);
 
             // running infinite loop for getting
@@ -89,36 +92,40 @@ class Server {
 
                 ObjectInputStream is = new ObjectInputStream(clientSocket.getInputStream());
 
-                Message m = (Message) is.readObject();
-                System.out.println(m.getText());
-                m.setText(2," Wow");
+                Message receivedMessage = (Message) is.readObject();
+                System.out.println(receivedMessage.getQuery());
 
-                boolean userMatch = false;//boolean flag
+                //For replying
+                Message replyMessage = new Message();
 
-                List employees = session.createQuery("FROM Employee").list();
-                for(Iterator iterator = employees.iterator(); iterator.hasNext();)
+                //IF ELSE STATEMENTS TO CATER DIFFERENT INCOMING QUERIES
+
+                //Login Query
+                if(receivedMessage.getQuery().equals("LoginQuery"))
                 {
-                    Employee employee = (Employee)iterator.next();
-
-                    if(employee.getUsername().equals(m.getEmployee().getUsername())
-                            && employee.getPassword().equals(m.getEmployee().getPassword()))
-                    {
-                        m.setText(1,"Username and Password Matched");
-                        userMatch = true;
-                    }
-                    //System.out.println(employee.getFirstName()+" "+employee.getLastName());
+                    //calling appropriate caterer for query
+                    replyMessage = this.LoginQueryHandler(receivedMessage, session);
+                }
+                else if(receivedMessage.getQuery().equals("KitchenManger-AssignTask"))
+                {
+                    //calling appropriate caterer for query
+                    replyMessage = this.KitchenManagerAssignTask(receivedMessage,session);
+                }
+                else if(receivedMessage.getQuery().equals("KitchenManger-AddTask"))
+                {
+                    //Calling add new task handler for this query
+                    replyMessage = this.AddNewTaskHandler(receivedMessage,session);
+                }
+                else
+                {
+                    replyMessage.setQuery("Invalid-Query");
                 }
 
-                if(userMatch == false)
-                {
-                    m.setText(1,"Credentials Invalid");
-                }
+                trans.commit();//committing hibernate transaction
 
-                System.out.println(m.getEmployee().getFirstName()+" "+m.getEmployee().getLastName());
-
+                //Sending reply message back to client
                 ObjectOutputStream os = new ObjectOutputStream(clientSocket.getOutputStream());
-
-                os.writeObject(m);
+                os.writeObject(replyMessage);
 
                 clientSocket.close();
 
@@ -140,6 +147,122 @@ class Server {
                     e.printStackTrace();
                 }
             }
+        }
+
+        //Function to assign task to an employee , used by kitchen manager
+        public Message KitchenManagerAssignTask(Message receivedMessage,Session session)
+        {
+            Message replyMessage = new Message();
+
+            //Getting emp and task from db
+            Employee emp = session.get(Employee.class,receivedMessage.getEmpAssignedto().getID());
+            Task atask = session.get(Task.class,receivedMessage.getAssignedTask().getId());
+
+            emp.addTask(atask);//addding task to employee
+
+            //updating tables
+            session.update(emp);
+            session.update(atask);
+
+            replyMessage.setQuery("Task-Assigned");
+
+            System.out.println("Assigned to : " + emp.getFullName());
+            System.out.println("Assigned to : " + atask.getTaskName());
+
+            return replyMessage;
+        }
+
+        //Function to assign task to an employee , used by kitchen manager
+        public Message AddNewTaskHandler(Message receivedMessage,Session session)
+        {
+            Message replyMessage = new Message();
+
+            //Getting new Task from Message
+            Task newTask = receivedMessage.getNewTask();
+
+            //Adding into table
+            session.save(newTask);
+
+            replyMessage.setQuery("Task-Added");
+
+            //Now adding new task list in message
+            replyMessage.setTasksList(this.getTasksList(session));
+
+            return replyMessage;
+        }
+
+        public Message LoginQueryHandler(Message receivedMessage, Session session)
+        {
+            Message replyMessage = new Message();
+
+            boolean userMatch = false;//boolean flag
+
+            List employees = session.createQuery("FROM Employee").list();
+            for(Iterator iterator = employees.iterator(); iterator.hasNext();)
+            {
+                Employee employee = (Employee)iterator.next();
+
+                if(employee.getUsername().equals(receivedMessage.getUsername())
+                        && employee.getPassword().equals(receivedMessage.getPassword()))
+                {
+                    replyMessage.setQuery("Username and Password Matched");
+                    EmployeeKMS empkms = new EmployeeKMS(employee.getID(), employee.getFirstName(), employee.getLastName(),
+                            employee.getUsername(), employee.getPassword(), employee.getEmployeeType(),employee.getTasks());
+                    replyMessage.setEmployeeObject(empkms);//Putting found employee in message
+
+                    //Putting employee list and tasks list in message
+                    replyMessage.setTasksList(this.getTasksList(session));
+                    replyMessage.setEmployeeList(this.getEmployeeList(session));
+
+                    System.out.println(employee.getEmployeeType());
+                    userMatch = true;
+                    break;
+                }
+                //System.out.println(employee.getFirstName()+" "+employee.getLastName());
+            }
+
+            if(userMatch == false)
+            {
+                replyMessage.setQuery("Credentials Invalid");
+            }
+
+            return replyMessage;
+        }
+
+
+
+        public ArrayList<Task> getTasksList(Session session)
+        {
+            ArrayList<Task> taskList = new ArrayList<Task>();
+
+            List tasks = session.createQuery("FROM Task").list();
+            for(Iterator iterator = tasks.iterator(); iterator.hasNext();)
+            {
+                Task task = (Task)iterator.next();
+                taskList.add(task);
+                //System.out.println(employee.getFirstName()+" "+employee.getLastName());
+                //employee.showAddresses();
+            }
+
+            return taskList;
+        }
+
+        public ArrayList<EmployeeKMS> getEmployeeList(Session session)
+        {
+            ArrayList<EmployeeKMS> employeeList = new ArrayList<EmployeeKMS>();
+
+            List employees = session.createQuery("FROM Employee").list();
+            for(Iterator iterator = employees.iterator(); iterator.hasNext();)
+            {
+                Employee employee = (Employee)iterator.next();
+                EmployeeKMS empkms = new EmployeeKMS(employee.getID(), employee.getFirstName(), employee.getLastName(),
+                        employee.getUsername(), employee.getPassword(), employee.getEmployeeType(),employee.getTasks());
+                employeeList.add(empkms);
+                //System.out.println(employee.getFirstName()+" "+employee.getLastName());
+                //employee.showAddresses();
+            }
+
+            return employeeList;
         }
     }
 }
