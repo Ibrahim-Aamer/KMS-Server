@@ -12,6 +12,11 @@ public class Message implements Serializable{
 
     private EmployeeKMS empKms;
 
+
+    private ArrayList<LeaveRequest> AllLeaveRequests;
+
+    private LeaveRequest newLeaveRequest;
+
     //private Employee employeeObject;
 
 
@@ -23,8 +28,47 @@ public class Message implements Serializable{
 
     private ArrayList<Task> TasksList = new ArrayList<Task>();
 
+    private LeaveRequest acknowledgeLeaveRequest;
+
+    //Array list for ingredients
+    private ArrayList<Ingredients> ingredientsList = new ArrayList<Ingredients>();
+
+
+    public LeaveRequest getAcknowledgeLeaveRequest() {
+        return acknowledgeLeaveRequest;
+    }
+
+    public void setAcknowledgeLeaveRequest(LeaveRequest acknowledgeLeaveRequest) {
+        this.acknowledgeLeaveRequest = acknowledgeLeaveRequest;
+    }
+
     public Task getNewTask() {
         return newTask;
+    }
+
+    public LeaveRequest getNewLeaveRequest() {
+        return newLeaveRequest;
+    }
+
+    public ArrayList<LeaveRequest> getAllLeaveRequests() {
+        return AllLeaveRequests;
+    }
+
+    public void setAllLeaveRequests(ArrayList<LeaveRequest> allLeaveRequests) {
+        AllLeaveRequests = allLeaveRequests;
+    }
+
+
+    public void setNewLeaveRequest(LeaveRequest newLeaveRequest) {
+        this.newLeaveRequest = newLeaveRequest;
+    }
+
+    public ArrayList<Ingredients> getIngredientsList() {
+        return ingredientsList;
+    }
+
+    public void setIngredientsList(ArrayList<Ingredients> ingredientsList) {
+        this.ingredientsList = ingredientsList;
     }
 
     public void setNewTask(Task newTask) {

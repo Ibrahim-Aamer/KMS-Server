@@ -1,6 +1,7 @@
 package com.pack.Employee;//package com.pack.Employee;
 
 import com.example.kms.Employee;
+import com.example.kms.Ingredients;
 import com.example.kms.Task;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -58,6 +59,16 @@ public class StoreData {
 			 session.save(task3);*/
 
 
+		 //Ingredients ing = new Ingredients(2,"strawberry");
+		 Ingredients ing1 = new Ingredients(2,"Coconut");
+		 Ingredients ing2 = new Ingredients(2,"Mango");
+		 Ingredients ing3 = new Ingredients(2,"Illaichi");
+		 Ingredients ing4 = new Ingredients(2,"Karele");
+
+		 session.save(ing1);
+		 session.save(ing2);
+		 session.save(ing3);
+		 session.save(ing4);
 
 
 
@@ -83,13 +94,13 @@ public class StoreData {
 		 //session.update(emp);
 		 //emp2.addTask(task1);
 
-		 Employee emp = session.get(Employee.class,4);
+		 /*Employee emp = session.get(Employee.class,4);
 		 //System.out.println(emp.getFirstName()+" "+emp.getLastName());
 		 List<Task> tasks = emp.getTasks();
 		 for(int c=0 ; c<tasks.size(); c++)
 		 {
 			 System.out.println(emp.getFirstName()+" "+emp.getLastName()+tasks.get(c).getTaskName());
-		 }
+		 }*/
 
 
 				 //Employee employee = session.get(Employee.class,emp1.getID());
@@ -109,7 +120,7 @@ public class StoreData {
 	        session.saveOrUpdate(emp3);
 	        session.saveOrUpdate(emp4);*/
 
-		 List employees = session.createQuery("FROM Employee").list();
+		 /*List employees = session.createQuery("FROM Employee").list();
 		 for(Iterator iterator = employees.iterator(); iterator.hasNext();)
 		 {
 			 Employee employee = (Employee)iterator.next();
@@ -120,7 +131,7 @@ public class StoreData {
 				 System.out.println(it.next().getTaskName());
 			 }
 			 //employee.showAddresses();
-		 }
+		 }*/
 
 		 /*List tasks = session.createQuery("FROM Task").list();
 		 for(Iterator iterator = tasks.iterator(); iterator.hasNext();)

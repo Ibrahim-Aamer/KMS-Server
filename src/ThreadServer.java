@@ -1,7 +1,4 @@
-import com.example.kms.Employee;
-import com.example.kms.EmployeeKMS;
-import com.example.kms.Message;
-import com.example.kms.Task;
+import com.example.kms.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -111,10 +108,21 @@ class Server {
                     //calling appropriate caterer for query
                     replyMessage = this.KitchenManagerAssignTask(receivedMessage,session);
                 }
-                else if(receivedMessage.getQuery().equals("KitchenManger-AddTask"))
+                else if(receivedMessage.getQuery().equals("KitchenManger-AddTask")
+                       || receivedMessage.getQuery().equals("Sous Chef-AddMealPrep"))
                 {
                     //Calling add new task handler for this query
                     replyMessage = this.AddNewTaskHandler(receivedMessage,session);
+                }
+                else if(receivedMessage.getQuery().equals("Leave-Request"))
+                {
+                    //Calling add new task handler for this query
+                    replyMessage = this.LeaveRequestHandler(receivedMessage,session);
+                }
+                else if(receivedMessage.getQuery().equals("KitchenManger-Acknowledge Leave Request"))
+                {
+                    //Calling add new task handler for this query
+                    replyMessage = this.KitchenManagerAcknowledgeLeaveRequest(receivedMessage,session);
                 }
                 else
                 {
@@ -149,6 +157,44 @@ class Server {
             }
         }
 
+        private Message KitchenManagerAcknowledgeLeaveRequest(Message receivedMessage, Session session)
+        {
+            Message replyMessage = new Message();
+
+            //getting new leave request
+            LeaveRequest ackLeaveRequest = session.get(LeaveRequest.class ,receivedMessage.getAcknowledgeLeaveRequest().getLeaveId());//getting ack leave request
+            //deleting from db
+            session.delete(ackLeaveRequest);
+
+
+
+            //session.saveOrUpdate(newLeaveRequest);
+
+            System.out.println("Leave deleted : " + ackLeaveRequest.getEmployeeName());
+
+            replyMessage.setQuery("Leave-Request Deleted");
+
+            return replyMessage;
+
+        }
+
+        private Message LeaveRequestHandler(Message receivedMessage, Session session)
+        {
+            Message replyMessage = new Message();
+
+            //getting new leave request
+            LeaveRequest newLeaveRequest = receivedMessage.getNewLeaveRequest();
+
+            session.saveOrUpdate(newLeaveRequest);
+
+            System.out.println("New Leave from : " + newLeaveRequest.getEmployeeName());
+
+            replyMessage.setQuery("Leave-Request Added");
+
+            return replyMessage;
+
+        }
+
         //Function to assign task to an employee , used by kitchen manager
         public Message KitchenManagerAssignTask(Message receivedMessage,Session session)
         {
@@ -158,11 +204,18 @@ class Server {
             Employee emp = session.get(Employee.class,receivedMessage.getEmpAssignedto().getID());
             Task atask = session.get(Task.class,receivedMessage.getAssignedTask().getId());
 
+            atask.setTaskDate(receivedMessage.getAssignedTask().getTaskDate());
+            session.saveOrUpdate(atask);
+
             emp.addTask(atask);//addding task to employee
 
             //updating tables
-            session.update(emp);
-            session.update(atask);
+
+            session.saveOrUpdate(emp);
+
+            System.out.println("EMP : " + emp.getFirstName());
+            System.out.println("Task date: "+atask.getTaskDate());
+
 
             replyMessage.setQuery("Task-Assigned");
 
@@ -183,12 +236,30 @@ class Server {
             //Adding into table
             session.save(newTask);
 
+            if(receivedMessage.getQuery().equals("Sous Chef-AddMealPrep"))
+            {
+                this.UpdateIngredientsList(receivedMessage.getIngredientsList(),session);
+            }
+
             replyMessage.setQuery("Task-Added");
 
             //Now adding new task list in message
             replyMessage.setTasksList(this.getTasksList(session));
 
             return replyMessage;
+        }
+
+        private void UpdateIngredientsList(ArrayList<Ingredients> ingredientsList, Session session)
+        {
+            //List updating
+            for(int c=0 ; c<ingredientsList.size(); c++)
+            {
+                Ingredients ing = session.get(Ingredients.class,ingredientsList.get(c).getId());
+
+                ing.setQuantity(ingredientsList.get(c).getQuantity());
+
+                session.update(ing);
+            }
         }
 
         public Message LoginQueryHandler(Message receivedMessage, Session session)
@@ -213,6 +284,8 @@ class Server {
                     //Putting employee list and tasks list in message
                     replyMessage.setTasksList(this.getTasksList(session));
                     replyMessage.setEmployeeList(this.getEmployeeList(session));
+                    replyMessage.setAllLeaveRequests(this.getAllLeaveRequests(session));
+                    replyMessage.setIngredientsList(this.getAllIngredientsList(session));
 
                     System.out.println(employee.getEmployeeType());
                     userMatch = true;
@@ -229,7 +302,37 @@ class Server {
             return replyMessage;
         }
 
+        private ArrayList<Ingredients> getAllIngredientsList(Session session)
+        {
+            ArrayList<Ingredients> AllIngredients = new ArrayList<Ingredients>();
 
+            List ingredients = session.createQuery("FROM Ingredients").list();
+            for(Iterator iterator = ingredients.iterator(); iterator.hasNext();)
+            {
+                Ingredients ing = (Ingredients) iterator.next();
+                AllIngredients.add(ing);
+                //System.out.println(employee.getFirstName()+" "+employee.getLastName());
+                //employee.showAddresses();
+            }
+
+            return AllIngredients;
+        }
+
+        public ArrayList<LeaveRequest> getAllLeaveRequests(Session session)
+        {
+            ArrayList<LeaveRequest> AllLeaveRequests = new ArrayList<LeaveRequest>();
+
+            List tasks = session.createQuery("FROM LeaveRequest").list();
+            for(Iterator iterator = tasks.iterator(); iterator.hasNext();)
+            {
+                LeaveRequest leaveRequest = (LeaveRequest)iterator.next();
+                AllLeaveRequests.add(leaveRequest);
+                //System.out.println(employee.getFirstName()+" "+employee.getLastName());
+                //employee.showAddresses();
+            }
+
+            return AllLeaveRequests;
+        }
 
         public ArrayList<Task> getTasksList(Session session)
         {
