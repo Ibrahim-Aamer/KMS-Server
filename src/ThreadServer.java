@@ -109,7 +109,8 @@ class Server {
                     replyMessage = this.KitchenManagerAssignTask(receivedMessage,session);
                 }
                 else if(receivedMessage.getQuery().equals("KitchenManger-AddTask")
-                       || receivedMessage.getQuery().equals("Sous Chef-AddMealPrep"))
+                       || receivedMessage.getQuery().equals("Sous Chef-AddMealPrep")
+                        || receivedMessage.getQuery().equals("Junior Chef-AddSupplyOrder"))
                 {
                     //Calling add new task handler for this query
                     replyMessage = this.AddNewTaskHandler(receivedMessage,session);
@@ -138,6 +139,11 @@ class Server {
                 {
                     //Calling add new task handler for this query
                     replyMessage = this.HeadChefAddNewMember(receivedMessage,session);
+                }
+                else if(receivedMessage.getQuery().equals("Junior Chef-Add New Ingredient"))
+                {
+                    //Calling add new task handler for this query
+                    replyMessage = this.JuniorChefAddIngredientsQuery(receivedMessage,session);
                 }
                 else
                 {
@@ -170,6 +176,22 @@ class Server {
                     e.printStackTrace();
                 }
             }
+        }
+
+        private Message JuniorChefAddIngredientsQuery(Message receivedMessage, Session session)
+        {
+            Message replyMessage = new Message();
+
+            //Getting new Ingredient from Message
+            Ingredients newIngredient = receivedMessage.getNewIngredient();
+
+            //Adding into table
+            session.save(newIngredient);
+
+            replyMessage.setQuery("Ingredients-Added");
+
+            return replyMessage;
+
         }
 
         private Message HeadChefAddNewMember(Message receivedMessage, Session session)

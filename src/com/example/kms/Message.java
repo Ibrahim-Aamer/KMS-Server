@@ -29,6 +29,8 @@ public class Message implements Serializable{
     private EmployeeKMS empAssignedto;
     private Task assignedTask;
 
+    private Ingredients newIngredient;
+
     private ArrayList<EmployeeKMS> EmployeeKMSList = new ArrayList<EmployeeKMS>();
 
     private ArrayList<Task> TasksList = new ArrayList<Task>();
@@ -185,5 +187,13 @@ public class Message implements Serializable{
 
     public void setNewMember(EmployeeKMS newMember) {
         this.newMember = newMember;
+    }
+
+    public Ingredients getNewIngredient() {
+        return newIngredient;
+    }
+
+    public void setNewIngredient(Ingredients newIngredient) {
+        this.newIngredient = newIngredient;
     }
 }
