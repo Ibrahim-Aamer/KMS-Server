@@ -17,6 +17,7 @@
     <mapping class="com.example.kms.Task" />
     <mapping class="com.example.kms.Ingredients" />
     <mapping class="com.example.kms.LeaveRequest" />
+    <mapping class="com.example.kms.Product" />
 
 
 </session-factory>

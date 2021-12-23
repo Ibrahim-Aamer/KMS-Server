@@ -26,6 +26,9 @@ public class EmployeeKMS implements Serializable {
     //private Address empAddresses;
 
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public List<Task> getTasks()
     {
@@ -106,6 +109,14 @@ public class EmployeeKMS implements Serializable {
 
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setEmployeeType(String employeeType) {
+        this.employeeType = employeeType;
     }
 }
 

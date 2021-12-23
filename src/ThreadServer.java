@@ -124,6 +124,21 @@ class Server {
                     //Calling add new task handler for this query
                     replyMessage = this.KitchenManagerAcknowledgeLeaveRequest(receivedMessage,session);
                 }
+                else if(receivedMessage.getQuery().equals("Head Chef-Create Menu"))
+                {
+                    //Calling add new task handler for this query
+                    replyMessage = this.HeadChefCreateMenu(receivedMessage,session);
+                }
+                else if(receivedMessage.getQuery().equals("Head Chef-Delete Menu Item"))
+                {
+                    //Calling add new task handler for this query
+                    replyMessage = this.HeadChefDeleteMenu(receivedMessage,session);
+                }
+                else if(receivedMessage.getQuery().equals("Head Chef-Add New Member"))
+                {
+                    //Calling add new task handler for this query
+                    replyMessage = this.HeadChefAddNewMember(receivedMessage,session);
+                }
                 else
                 {
                     replyMessage.setQuery("Invalid-Query");
@@ -155,6 +170,79 @@ class Server {
                     e.printStackTrace();
                 }
             }
+        }
+
+        private Message HeadChefAddNewMember(Message receivedMessage, Session session)
+        {
+            Message replyMessage = new Message();
+
+            EmployeeKMS tempEmp = receivedMessage.getNewMember();//getting employeeKMS
+
+            //Creating new Employee
+            Employee newEmp = new Employee(tempEmp.getFirstName(),tempEmp.getLastName()
+                    ,tempEmp.getUsername(),tempEmp.getPassword(), tempEmp.getEmployeeType());
+
+            //Adding into table
+            session.save(newEmp);
+
+
+            replyMessage.setQuery("Member-Added");
+
+            //Now adding new task list in message
+            replyMessage.setEmployeeList(this.getEmployeeList(session));
+
+            return replyMessage;
+        }
+
+        private Message HeadChefDeleteMenu(Message receivedMessage, Session session)
+        {
+            Message replyMessage = new Message();
+
+            //getting new leave request
+            Product delProd = session.get(Product.class ,receivedMessage.getNewProduct().getProductID());//getting ack leave request
+            //deleting from db
+            session.delete(delProd);
+
+            //session.saveOrUpdate(newLeaveRequest);
+
+            System.out.println("Product deleted : " + delProd.getName());
+
+            replyMessage.setQuery("Product Deleted");
+
+            return replyMessage;
+
+
+        }
+
+        private Message HeadChefCreateMenu(Message receivedMessage, Session session)
+        {
+
+            //getting new received product
+            Product receivedProduct = receivedMessage.getNewProduct();
+
+            //Searching in db
+            Product newProduct = session.get(Product.class,receivedProduct.getProductID());
+
+            if(newProduct != null)
+            {
+                newProduct.setDescription(receivedProduct.getDescription());
+                newProduct.setImgPath(receivedProduct.getImgPath());
+                newProduct.setPrice(receivedProduct.getPrice());
+                newProduct.setName(receivedProduct.getName());
+                session.update(newProduct);//saving edited product
+            }
+            else
+            {
+                session.save(receivedProduct);//saving new product
+            }
+
+            Message replyMessage = new Message();
+            replyMessage.setQuery("Product-Added");
+
+            //Now adding new task list in message
+            replyMessage.setTasksList(this.getTasksList(session));
+
+            return replyMessage;
         }
 
         private Message KitchenManagerAcknowledgeLeaveRequest(Message receivedMessage, Session session)
@@ -286,6 +374,7 @@ class Server {
                     replyMessage.setEmployeeList(this.getEmployeeList(session));
                     replyMessage.setAllLeaveRequests(this.getAllLeaveRequests(session));
                     replyMessage.setIngredientsList(this.getAllIngredientsList(session));
+                    replyMessage.setProductsList(this.getProductList(session));
 
                     System.out.println(employee.getEmployeeType());
                     userMatch = true;
@@ -349,6 +438,24 @@ class Server {
 
             return taskList;
         }
+
+        public ArrayList<Product> getProductList(Session session)
+        {
+            ArrayList<Product> productList = new ArrayList<Product>();
+
+            List employees = session.createQuery("FROM Product").list();
+            for(Iterator iterator = employees.iterator(); iterator.hasNext();)
+            {
+                Product product = (Product)iterator.next();
+                Product pd = new Product(product.getProductID(),product.getName(),product.getImgPath(),product.getPrice(), product.getDescription());
+                productList.add(pd);
+                //System.out.println(employee.getFirstName()+" "+employee.getLastName());
+                //employee.showAddresses();
+            }
+
+            return productList;
+        }
+
 
         public ArrayList<EmployeeKMS> getEmployeeList(Session session)
         {
