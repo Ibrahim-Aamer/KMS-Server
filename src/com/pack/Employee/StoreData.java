@@ -33,6 +33,9 @@ public class StoreData {
 				System.out.println(e.getMessage());
 			}
 
+		 //Employee emp1=new Employee("-","-","System","tiger","System");
+			//session.save(emp1);
+
 	   /*   Employee emp1=new Employee("John","Khan","John12","tiger","Kitchen Manager");
 		 	Employee emp2=new Employee("Ibrahim","Aamer","Ibrahim12","tiger","Junior Chef");
 		 	Employee emp3=new Employee("Musa","Aamer","Musa12","tiger","Sous Chef");
@@ -60,7 +63,7 @@ public class StoreData {
 
 
 		 //Ingredients ing = new Ingredients(2,"strawberry");
-		 Ingredients ing1 = new Ingredients(2,"Coconut");
+		 /*Ingredients ing1 = new Ingredients(2,"Coconut");
 		 Ingredients ing2 = new Ingredients(2,"Mango");
 		 Ingredients ing3 = new Ingredients(2,"Illaichi");
 		 Ingredients ing4 = new Ingredients(2,"Karele");
@@ -68,7 +71,7 @@ public class StoreData {
 		 session.save(ing1);
 		 session.save(ing2);
 		 session.save(ing3);
-		 session.save(ing4);
+		 session.save(ing4);*/
 
 
 

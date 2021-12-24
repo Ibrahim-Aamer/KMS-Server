@@ -22,6 +22,10 @@ public class Message implements Serializable{
 
     private EmployeeKMS newMember;
 
+    private ArrayList<Order> ordersList;
+
+    private Order newOrder;
+
     //private Employee employeeObject;
 
 
@@ -195,5 +199,21 @@ public class Message implements Serializable{
 
     public void setNewIngredient(Ingredients newIngredient) {
         this.newIngredient = newIngredient;
+    }
+
+    public ArrayList<Order> getOrdersList() {
+        return ordersList;
+    }
+
+    public void setOrdersList(ArrayList<Order> ordersList) {
+        this.ordersList = ordersList;
+    }
+
+    public Order getNewOrder() {
+        return newOrder;
+    }
+
+    public void setNewOrder(Order newOrder) {
+        this.newOrder = newOrder;
     }
 }

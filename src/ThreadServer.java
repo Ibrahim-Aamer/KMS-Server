@@ -70,8 +70,12 @@ class Server {
             this.clientSocket = socket;
         }
 
+        //Array list to store all orders in server
+        public static ArrayList<Order> OrdersList = new ArrayList<Order>();
+
         public void run()
         {
+
 
             //---HIBERNATE INITIAL CONFIGURATION CODE-------------
             // loads configuration and creates a session factory
@@ -145,6 +149,27 @@ class Server {
                     //Calling add new task handler for this query
                     replyMessage = this.JuniorChefAddIngredientsQuery(receivedMessage,session);
                 }
+                else if(receivedMessage.getQuery().equals("Waiter-Add Order"))
+                {
+                    //Calling add new task handler for this query
+                    replyMessage = this.WaiterAddOrderQuery(receivedMessage,session);
+
+                    for(int c=0 ; c<OrdersList.size(); c++)
+                    {
+                        System.out.println("Order : "+c);
+
+                        for(int i =0 ; i < OrdersList.get(c).getOrder_products().size() ; i++)
+                        {
+                            System.out.println(OrdersList.get(c).getOrder_products().get(i).getProductName()
+                            +" "+OrdersList.get(c).getOrder_products().get(i).getQuantity());
+                        }
+                    }
+                }
+                else if(receivedMessage.getQuery().equals("System-Request Orders"))
+                {
+                    //Calling add new task handler for this query
+                    replyMessage = this.SystemRequestOrdersQuery(receivedMessage,session);
+                }
                 else
                 {
                     replyMessage.setQuery("Invalid-Query");
@@ -176,6 +201,32 @@ class Server {
                     e.printStackTrace();
                 }
             }
+        }
+
+        private Message SystemRequestOrdersQuery(Message receivedMessage, Session session)
+        {
+            Message replyMessage = new Message();
+
+            replyMessage.setQuery("Orders Provided");
+
+            //Writing Orders List in reply message
+            replyMessage.setOrdersList(OrdersList);
+
+            return replyMessage;
+        }
+
+        //Function to store orders received from waiter in server
+        private Message WaiterAddOrderQuery(Message receivedMessage, Session session)
+        {
+
+            Message replyMessage = new Message();
+
+            //Adding new order in Orders List
+            OrdersList.add(receivedMessage.getNewOrder());
+
+            replyMessage.setQuery("Order Added");
+
+            return replyMessage;
         }
 
         private Message JuniorChefAddIngredientsQuery(Message receivedMessage, Session session)
